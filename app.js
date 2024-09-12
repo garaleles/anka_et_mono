@@ -1,15 +1,14 @@
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
-    const io = require('socket.io')(http, {
+   const io = require('socket.io')(http, {
   cors: {
-    origin: process.env.FRONTEND_URL || "https://anka-et-mono.onrender.com",
-    methods: ["GET", "POST"]
+    origin: [process.env.FRONTEND_URL, "https://anka-et-mono.onrender.com"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
   },
   pingTimeout: 60000,
   pingInterval: 25000
-    });
-
+});
 const Notification = require('./models/Notification');
 const ChatNotification = require('./models/ChatNotification');
 const Message = require('./models/Message');
@@ -27,7 +26,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const path = require('path');
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || "https://anka-et-mono.onrender.com",
+  origin: [process.env.FRONTEND_URL, "https://anka-et-mono.onrender.com"],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -71,7 +70,7 @@ app.use(helmet.contentSecurityPolicy({
     scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://kit.fontawesome.com", "https://ka-f.fontawesome.com"],
     styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://db.onlinewebfonts.com", "https://ka-f.fontawesome.com"],
     imgSrc: ["'self'", "data:", "http://me.kis.v2.scr.kaspersky-labs.com", "ws://me.kis.v2.scr.kaspersky-labs.com", "https://res.cloudinary.com"],
-    connectSrc: ["'self'", "https://res.cloudinary.com", "https://ka-f.fontawesome.com", "https://anka-et-mono.onrender.com", "ws://localhost:4000", "wss://localhost:4000"],
+    connectSrc: ["'self'", "https://res.cloudinary.com", "https://ka-f.fontawesome.com", "https://anka-et-mono.onrender.com", "ws://localhost:4000", "wss://localhost:4000", "wss://anka-et-mono.onrender.com"],
     fontSrc: ["'self'", "data:", "https://fonts.gstatic.com", "https://db.onlinewebfonts.com", "https://ka-f.fontawesome.com"],
     objectSrc: ["'none'"],
     mediaSrc: ["'self'"],
