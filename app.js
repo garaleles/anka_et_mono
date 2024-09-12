@@ -1,14 +1,15 @@
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
-     const io = require('socket.io')(http, {
-       cors: {
-         origin: "http://localhost:3000",
-         methods: ["GET", "POST"]
-       },
-       pingTimeout: 60000,
-       pingInterval: 25000
-     });
+    const io = require('socket.io')(http, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "https://anka-et-mono.onrender.com",
+    methods: ["GET", "POST"]
+  },
+  pingTimeout: 60000,
+  pingInterval: 25000
+    });
+
 const Notification = require('./models/Notification');
 const ChatNotification = require('./models/ChatNotification');
 const Message = require('./models/Message');
@@ -26,10 +27,8 @@ const mongoSanitize = require('express-mongo-sanitize');
 const path = require('path');
 
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'PRODUCTION'
-    ? "http://localhost:3000"
-    : "http://localhost:3000",
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  origin: process.env.FRONTEND_URL || "https://anka-et-mono.onrender.com",
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
   optionsSuccessStatus: 200
@@ -44,7 +43,7 @@ cloudinary.config({
   api_secret: process.env.CLOUD_API_SECRET
 });
 
-const port = process.env.PORT;
+const port = process.env.PORT || 4000;
 
 
 
