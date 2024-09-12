@@ -1,17 +1,14 @@
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
-    const io = require('socket.io')(http, {
-  cors: {
-    origin: process.env.NODE_ENV === 'production' 
-      ? 'https://anka-et-1.onrender.com' 
-      : 'http://localhost:3000',
-    methods: ["GET", "POST"],
-    credentials: true
-  },
-  pingTimeout: 60000,
-  pingInterval: 25000
-});
+     const io = require('socket.io')(http, {
+       cors: {
+         origin: "http://localhost:3000",
+         methods: ["GET", "POST"]
+       },
+       pingTimeout: 60000,
+       pingInterval: 25000
+     });
 const Notification = require('./models/Notification');
 const ChatNotification = require('./models/ChatNotification');
 const Message = require('./models/Message');
@@ -30,9 +27,9 @@ const path = require('path');
 
 const corsOptions = {
   origin: process.env.NODE_ENV === 'PRODUCTION'
-    ? ['https://anka-et-1.onrender.com', 'https://anka-et.onrender.com']
-    : 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    ? "http://localhost:3000"
+    : "http://localhost:3000",
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
   optionsSuccessStatus: 200
