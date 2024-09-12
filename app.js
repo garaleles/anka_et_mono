@@ -124,10 +124,10 @@ app.use('/api/v1/chat-notifications', chatNotificationRouter);
 app.use('/api/v1/email-config', emailConfigRouter);
 
 // Statik dosyaları sunmak için
-app.use(express.static(path.join(__dirname, '../frontend/build')));
+app.use(express.static(path.join(__dirname, './frontend/build')));
 /// Catch-all route
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+  res.sendFile(path.join(__dirname, './frontend/build', 'index.html'));
 });
 
 // Hata yakalama middleware'leri
