@@ -71,13 +71,14 @@ app.use(helmet.contentSecurityPolicy({
     scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://kit.fontawesome.com", "https://ka-f.fontawesome.com"],
     styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://db.onlinewebfonts.com", "https://ka-f.fontawesome.com"],
     imgSrc: ["'self'", "data:", "http://me.kis.v2.scr.kaspersky-labs.com", "ws://me.kis.v2.scr.kaspersky-labs.com", "https://res.cloudinary.com"],
-    connectSrc: ["'self'", "https://res.cloudinary.com", "https://ka-f.fontawesome.com"],
+    connectSrc: ["'self'", "https://res.cloudinary.com", "https://ka-f.fontawesome.com", "https://anka-et-mono.onrender.com", "ws://localhost:4000", "wss://localhost:4000"],
     fontSrc: ["'self'", "data:", "https://fonts.gstatic.com", "https://db.onlinewebfonts.com", "https://ka-f.fontawesome.com"],
     objectSrc: ["'none'"],
     mediaSrc: ["'self'"],
     frameSrc: ["'self'"]
   }
 }));
+
 app.set('trust proxy', 1);
 
 
