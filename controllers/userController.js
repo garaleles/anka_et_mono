@@ -58,34 +58,39 @@ const updateUser = async (req, res) => {
 
 
 const updateUserPassword = async (req, res) => {
-  const { oldPassword, newPassword } = req.body;
-  console.log(req.body); // Burada payload'ın doğru geldiğinden emin olun.
+  try {
+   
+    const { oldPassword, newPassword } = req.body;
 
-  if (!oldPassword || !newPassword) {
-    throw new CustomError.BadRequestError('Lütfen tüm alanları doldurun');
+    if (!oldPassword || !newPassword) {
+  return res.status(400).json({ msg: 'Lütfen tüm alanları doldurun' });
+}
+
+if (oldPassword === newPassword) {
+  return res.status(400).json({ msg: 'Yeni şifreniz, eski şifrenizle aynı olamaz' });
+}
+    const user = await User.findOne({ _id: req.user.userId });
+    console.log('Bulunan kullanıcı:', user);
+
+    if (!user) {
+      throw new CustomError.NotFoundError('Kullanıcı bulunamadı');
+    }
+
+    const isPasswordCorrect = await user.comparePassword(oldPassword);
+   
+
+    if (!isPasswordCorrect) {
+      throw new CustomError.UnauthenticatedError('Eski şifreniz yanlış');
+    }
+
+    user.password = newPassword;
+    await user.save();
+    res.status(StatusCodes.OK).json({ message: 'Şifreniz başarıyla değiştirildi' });
+  } catch (error) {
+    console.error('updateUserPassword hatası:', error);
+    res.status(error.statusCode || 500).json({ msg: error.message || 'Bir hata oluştu' });
   }
-
-  if (oldPassword === newPassword) {
-    throw new CustomError.BadRequestError('Yeni şifreniz, eski şifrenizle aynı olamaz');
-  }
-
-  const user = await User.findOne({ _id: req.user.userId });
-
-  if (!user) {
-    throw new CustomError.NotFoundError('Kullanıcı bulunamadı');
-  }
-
-  const isPasswordCorrect = await user.comparePassword(oldPassword);
-
-  if (!isPasswordCorrect) {
-    throw new CustomError.UnauthenticatedError('Eski şifreniz yanlış');
-  }
-
-  user.password = newPassword;
-  await user.save();
-  res.status(StatusCodes.OK).json({ message: 'Şifreniz başarıyla değiştirildi' });
 };
-
 
 const deleteUser = async (req, res) => {
   const user = await User.findOne({ _id: req.params.id });

@@ -35,8 +35,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 
-
-
 dotenv.config()
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -65,22 +63,43 @@ const emailConfigRouter = require('./routes/emailConfigRoutes.js');
 const notFoundMiddleware = require('./middleware/not-found.js');
 const errorHandlerMiddleware = require('./middleware/error-handler.js');
 
+
 // Genel güvenlik önlemleri
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://kit.fontawesome.com", "https://me.kis.v2.scr.kaspersky-labs.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", 
+        "https://kit.fontawesome.com",
+        "https://me.kis.v2.scr.kaspersky-labs.com"],
+      
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net",
+        "http://me.kis.v2.scr.kaspersky-labs.com", "https://fonts.googleapis.com",
+        "https://db.onlinewebfonts.com", "https://ka-f.fontawesome.com"],
+      
       imgSrc: ["'self'", "data:", "https://res.cloudinary.com"], // Cloudinary için
+
       connectSrc: [
         "'self'", 
         "wss://anka-et-mono.onrender.com",  // WebSocket bağlantısı için
         "https://api.cloudinary.com",       // Cloudinary API bağlantısı için
         process.env.FRONTEND_URL,           // Frontend URL'niz
-        "https://anka-et-mono.onrender.com", // Backend URL'niz
+        "https://anka-et-mono.onrender.com",
+        "ws://localhost:4000",
+        "https://ka-f.fontawesome.com/",
+        "https://res.cloudinary.com",
+        "https://cdn.jsdelivr.net",
+        "https://kit.fontawesome.com",
+       
+        // Backend URL'niz
       ],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      fontSrc: ["'self'",
+        "https://fonts.gstatic.com",
+        "https://db.onlinewebfonts.com",
+        "https://fonts.googleapis.com",
+        "https://ka-f.fontawesome.com"
+      ],
+      
       objectSrc: ["'none'"],
       upgradeInsecureRequests: []
     }
@@ -89,28 +108,35 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-
-
 app.set('trust proxy', 1);
 
-// Güvenlik middleware'leri
-app.use(helmet());
+
+
+app.use(cors(corsOptions));
+
+
+
+
+
+
 app.use(xss());
 app.use(mongoSanitize());
 
-// CORS
-app.use(cors(corsOptions));
+
 
 // Diğer middleware'ler
+app.use(morgan('tiny'));
 app.use(express.json({limit:'10mb'}));
 app.use(cookieParser(process.env.JWT_SECRET));
-//app.use(express.urlencoded({ extended: true })); // Bu satırı ekleyin
-app.use(morgan('tiny'));
+
+
 
 app.use(fileUpload({
   useTempFiles: true,
   tempFileDir: '/tmp/',
 }));
+
+
 
 
 // Route'ları tanımla
