@@ -24,7 +24,7 @@ const register = async (req, res) => {
 
   const user = await User.create({ email, name, password, profilePic, role, verificationToken });
 
-  const origin = 'http://localhost:3000';
+  const origin = 'https://anka-et-mono.onrender.com';
   
   await sendVerificationEmail({
    name: name,
@@ -33,6 +33,7 @@ const register = async (req, res) => {
   origin: origin
   
   });
+
   
   res.status(StatusCodes.CREATED).json({ msg: 'Hesabınız başarıyla oluşturuldu. Lütfen e-postanızı kontrol edin ve hesabınızı doğrulayın.' });
  
