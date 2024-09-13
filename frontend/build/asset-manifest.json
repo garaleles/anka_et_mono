@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.css": "/static/css/main.39fcc643.css",
-    "main.js": "/static/js/main.09e30eb0.js",
+    "main.css": "/static/css/main.00279117.css",
+    "main.js": "/static/js/main.03240f44.js",
     "static/js/213.1276bd44.chunk.js": "/static/js/213.1276bd44.chunk.js",
     "static/js/455.8fb15ae2.chunk.js": "/static/js/455.8fb15ae2.chunk.js",
     "static/media/lavabo_telefonlu.jpg": "/static/media/lavabo_telefonlu.e79d90e25de6d871a881.jpg",
     "static/media/banyo_dekor.jpg": "/static/media/banyo_dekor.7f8679939d00827d8559.jpg",
     "index.html": "/index.html",
-    "main.39fcc643.css.map": "/static/css/main.39fcc643.css.map",
-    "main.09e30eb0.js.map": "/static/js/main.09e30eb0.js.map",
+    "main.00279117.css.map": "/static/css/main.00279117.css.map",
+    "main.03240f44.js.map": "/static/js/main.03240f44.js.map",
     "213.1276bd44.chunk.js.map": "/static/js/213.1276bd44.chunk.js.map",
     "455.8fb15ae2.chunk.js.map": "/static/js/455.8fb15ae2.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.39fcc643.css",
-    "static/js/main.09e30eb0.js"
+    "static/css/main.00279117.css",
+    "static/js/main.03240f44.js"
   ]
 }
