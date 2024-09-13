@@ -3,7 +3,7 @@ const app = express();
 const http = require('http').createServer(app);
    const io = require('socket.io')(http, {
   cors: {
-    origin: [process.env.FRONTEND_URL, "https://anka-et-mono.onrender.com"],
+    origin: [process.env.FRONTEND_URL, "https://www.ankapazarlama.com"],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
   },
   pingTimeout: 60000,
@@ -81,10 +81,10 @@ app.use(helmet({
 
       connectSrc: [
         "'self'", 
-        "wss://anka-et-mono.onrender.com",  // WebSocket bağlantısı için
+        "wss://www.ankapazarlama.com",  // WebSocket bağlantısı için
         "https://api.cloudinary.com",       // Cloudinary API bağlantısı için
         process.env.FRONTEND_URL,           // Frontend URL'niz
-        "https://anka-et-mono.onrender.com",
+        "https://www.ankapazarlama.com",
         "ws://localhost:4000",
         "https://ka-f.fontawesome.com/",
         "https://res.cloudinary.com",
