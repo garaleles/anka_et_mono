@@ -29,16 +29,11 @@ const showCurrentUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  // console.log('Tüm req.body:', req.body);
-  // console.log('req.params:', req.params);
-
   const { id } = req.params;
-  const { name, email, role } = req.body.body || req.body;
+  const { name, email } = req.body;
 
-  //console.log('Çıkarılan değerler:', { id, name, email, role });
-
-  if (!email || !name || !role) {
-    throw new CustomError.BadRequestError(`Lütfen tüm alanları doldurun. Eksik alanlar: ${!email ? 'email, ' : ''}${!name ? 'name, ' : ''}${!role ? 'role' : ''}`);
+  if (!email || !name) {
+    throw new CustomError.BadRequestError('Lütfen tüm alanları doldurun');
   }
  
   const user = await User.findById(id);
@@ -46,39 +41,39 @@ const updateUser = async (req, res) => {
   if (!user) {
     throw new CustomError.NotFoundError(`Bu ID'ye sahip kullanıcı bulunamadı: ${id}`);
   }
+
+  // Kullanıcının kendi profilini güncellemesine izin ver
+  checkPermissions(req.user, user._id);
  
   user.email = email;
   user.name = name;
-  user.role = role;
 
   await user.save();
 
-  res.status(StatusCodes.OK).json({ 
-    success: true,
-    message: 'Kullanıcı başarıyla güncellendi',
-    user: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role
-    }
-  });
+  const tokenUser = createTokenUser(user);
+  attachCookiesToResponse({ res, user: tokenUser });
+
+  res.status(StatusCodes.OK).json({ user: tokenUser });
 };
 
-const updateUserPassword = async (req, res) => { 
-const { oldPassword, newPassword } = req.body;
+
+const updateUserPassword = async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  console.log(req.body); // Burada payload'ın doğru geldiğinden emin olun.
+
+  if (!oldPassword || !newPassword) {
+    throw new CustomError.BadRequestError('Lütfen tüm alanları doldurun');
+  }
+
   if (oldPassword === newPassword) {
     throw new CustomError.BadRequestError('Yeni şifreniz, eski şifrenizle aynı olamaz');
   }
 
   const user = await User.findOne({ _id: req.user.userId });
-  
 
   if (!user) {
     throw new CustomError.NotFoundError('Kullanıcı bulunamadı');
   }
-
-
 
   const isPasswordCorrect = await user.comparePassword(oldPassword);
 
@@ -90,6 +85,7 @@ const { oldPassword, newPassword } = req.body;
   await user.save();
   res.status(StatusCodes.OK).json({ message: 'Şifreniz başarıyla değiştirildi' });
 };
+
 
 const deleteUser = async (req, res) => {
   const user = await User.findOne({ _id: req.params.id });
@@ -119,6 +115,7 @@ const getChatUsers = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ users, count: users.length });
 };
+
 
 
 

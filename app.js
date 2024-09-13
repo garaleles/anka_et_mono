@@ -26,13 +26,15 @@ const mongoSanitize = require('express-mongo-sanitize');
 const path = require('path');
 
 const corsOptions = {
-  origin: [process.env.FRONTEND_URL, "https://anka-et-mono.onrender.com"],
+  origin: "*", // Tüm kaynaklardan gelen isteklere izin verir
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
+  credentials: true, // İsterseniz bu true olarak kalabilir, ancak bu durumda origin sabit kalmalı
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
+
+
 
 
 dotenv.config()
@@ -64,49 +66,51 @@ const notFoundMiddleware = require('./middleware/not-found.js');
 const errorHandlerMiddleware = require('./middleware/error-handler.js');
 
 // Genel güvenlik önlemleri
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://kit.fontawesome.com", "https://ka-f.fontawesome.com"],
-    styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://db.onlinewebfonts.com", "https://ka-f.fontawesome.com"],
-    imgSrc: ["'self'", "data:", "http://me.kis.v2.scr.kaspersky-labs.com", "ws://me.kis.v2.scr.kaspersky-labs.com", "https://res.cloudinary.com"],
-    connectSrc: ["'self'", "https://res.cloudinary.com", "https://ka-f.fontawesome.com", "https://anka-et-mono.onrender.com", "ws://localhost:4000", "wss://localhost:4000", "wss://anka-et-mono.onrender.com"],
-    fontSrc: ["'self'", "data:", "https://fonts.gstatic.com", "https://db.onlinewebfonts.com", "https://ka-f.fontawesome.com"],
-    objectSrc: ["'none'"],
-    mediaSrc: ["'self'"],
-    frameSrc: ["'self'"]
-  }
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://kit.fontawesome.com", "https://me.kis.v2.scr.kaspersky-labs.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      imgSrc: ["'self'", "data:", "https://res.cloudinary.com"], // Cloudinary için
+      connectSrc: [
+        "'self'", 
+        "wss://anka-et-mono.onrender.com",  // WebSocket bağlantısı için
+        "https://api.cloudinary.com",       // Cloudinary API bağlantısı için
+        process.env.FRONTEND_URL,           // Frontend URL'niz
+        "https://anka-et-mono.onrender.com", // Backend URL'niz
+      ],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: []
+    }
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
+
+
 
 app.set('trust proxy', 1);
 
-
-
-app.use(cors(corsOptions));
-
-
-
-
-
-
+// Güvenlik middleware'leri
+app.use(helmet());
 app.use(xss());
 app.use(mongoSanitize());
 
-
+// CORS
+app.use(cors(corsOptions));
 
 // Diğer middleware'ler
-app.use(morgan('tiny'));
 app.use(express.json({limit:'10mb'}));
 app.use(cookieParser(process.env.JWT_SECRET));
-
-
+//app.use(express.urlencoded({ extended: true })); // Bu satırı ekleyin
+app.use(morgan('tiny'));
 
 app.use(fileUpload({
   useTempFiles: true,
   tempFileDir: '/tmp/',
 }));
-
-
 
 
 // Route'ları tanımla

@@ -18,7 +18,7 @@ router.get('/chat-users', authenticateUser, getChatUsers);
 
 router.route('/').get(authenticateUser, authorizePermissions('admin'), getAllUsers);
 router.route('/showMe').get(authenticateUser, showCurrentUser);
-router.route('/:id').patch(authenticateUser,authorizePermissions('admin'), updateUser);
+router.route('/:id').patch(authenticateUser, updateUser);
 router.route('/updateUserPassword').patch(authenticateUser, updateUserPassword);
 router.route('/:id').get(authenticateUser, getSingleUser).delete(authenticateUser, authorizePermissions('admin'), deleteUser);
 
