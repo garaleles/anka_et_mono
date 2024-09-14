@@ -53,6 +53,7 @@ const getAllProducts = async (req, res) => {
     });
   }
 }
+
 const getAdminProducts = async (req, res) => { 
   const products = await Product.find().populate('brand').populate('category');
   res.status(StatusCodes.OK).json({ products, count: products.length });
