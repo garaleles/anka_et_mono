@@ -8,6 +8,7 @@ const ExcelJS = require('exceljs');
 const fileUpload = require('express-fileupload');
 const fs = require('fs');
 const path = require('path');
+const ExcelTemplate =require('../models/excelTemplate')
 
 const createProduct = async (req, res) => { 
   req.body.user = req.user.userId;
@@ -15,17 +16,26 @@ const createProduct = async (req, res) => {
   res.status(StatusCodes.CREATED).json({ product })
 }
 
-const getAllProducts = async (req, res) => { 
-  const resPerPage = 8
-  
+
+const getAllProducts = async (req, res) => {
+  const resPerPage = 9;
+
   const apiFilters = new ApiFilters(Product, req.query).search().filter();
 
+  // İlk başta ürünleri al
   let products = await apiFilters.query;
 
-  let filteredProductsCount = products.length
+  // Eğer marka filtreleme varsa markaya göre filtrele
+  if (req.query.brand) {
+    products = products.filter(product => product.brand.toString() === req.query.brand);
+  }
 
+  let filteredProductsCount = products.length;
+
+  // Sayfalama işlemi
   apiFilters.pagination(resPerPage);
 
+  // Ürünleri tekrar sorgula
   products = await apiFilters.query.clone()
     .populate('reviews')
     .populate('brand')
@@ -37,22 +47,23 @@ const getAllProducts = async (req, res) => {
       name: { $regex: req.query.keyword.split(' ').join('|'), $options: 'i' }
     }).limit(5);
     
-    res.status(StatusCodes.OK).json({ 
+    return res.status(StatusCodes.OK).json({ 
       products: [], 
       count: 0, 
       resPerPage, 
       filteredProductsCount: 0,
       suggestions: similarProducts.map(p => p.name)
     });
-  } else {
-    res.status(StatusCodes.OK).json({ 
-      products, 
-      count: products.length, 
-      resPerPage, 
-      filteredProductsCount 
-    });
   }
-}
+
+  res.status(StatusCodes.OK).json({ 
+    products, 
+    count: products.length, 
+    resPerPage, 
+    filteredProductsCount 
+  });
+};
+
 
 const getAdminProducts = async (req, res) => { 
   const products = await Product.find().populate('brand').populate('category');
@@ -92,6 +103,7 @@ const updateProduct = async (req, res) => {
 }
 
 
+
 const deleteProduct = async (req, res) => { 
   try {
     const { id: productId } = req.params;
@@ -105,12 +117,13 @@ const deleteProduct = async (req, res) => {
     
     // Ürüne ait resimleri sil  
     if (product.images) {
-      for(let i = 0; i < product.images?.length; i++){
-        await cloudinary.uploader.destroy(product.images[i].public_id);
+      for(let i = 0; i < product.images.length; i++){
+        if (product.images[i].public_id) { // public_id kontrolü eklendi
+          await cloudinary.uploader.destroy(product.images[i].public_id);
+        }
       }
     }
     
-
     // Ürünü sil
     await Product.deleteOne({ _id: productId });
     
@@ -119,9 +132,6 @@ const deleteProduct = async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST).json({ msg: "Ürün silinirken bir hata oluştu.", error: error.message });
   }
 }
-
-
-
 const uploadImage = async (req, res) => {
     const { id } = req.params;
     const { body } = req.body;
@@ -383,6 +393,112 @@ const exportProducts = async (req, res) => {
 };
 
 
+
+const downloadTemplate = async (req, res) => {
+  try {
+    // Veritabanından excelTemplate koleksiyonundaki verileri çekin
+    const templateData = await ExcelTemplate.find({}, 'name price description stock categoryId brandId userId');
+
+    // ExcelJS Workbook oluşturma
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Ürün Şablonu');
+
+    // Şablon başlıklarını tanımlayın
+    worksheet.columns = [
+      { header: 'Ürün Adı', key: 'name', width: 30 },
+      { header: 'Fiyat', key: 'price', width: 15 },
+      { header: 'Açıklama', key: 'description', width: 50 },
+      { header: 'Stok', key: 'stock', width: 10 },
+      { header: 'Kategori ID', key: 'categoryId', width: 30 },
+      { header: 'Marka ID', key: 'brandId', width: 30 },
+      { header: 'Kullanıcı ID', key: 'userId', width: 30 },
+    ];
+
+    // Veritabanından çekilen her kaydı Excel'e ekleyin
+    templateData.forEach((data) => {
+      worksheet.addRow({
+        name: data.name,
+        price: data.price,
+        description: data.description,
+        stock: data.stock,
+        categoryId: data.categoryId,
+        brandId: data.brandId,
+        userId: data.userId,
+      });
+    });
+
+    
+
+    // Yanıt başlıklarını ayarlayın ve Excel dosyasını yanıt olarak indirin
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=createProducts.xlsx');
+
+    // Excel dosyasını yanıt olarak gönderin
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Şablon indirme hatası:', error);
+    res.status(500).json({ success: false, message: 'Şablon indirme işlemi sırasında bir hata oluştu.', error: error.message });
+  }
+};
+
+
+const importCreateProducts = async (req, res) => {
+  try {
+    if (!req.files || !req.files.file) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Lütfen bir Excel dosyası yükleyin.' });
+    }
+
+    const file = req.files.file;  // Yüklenen dosya
+    const uploadDir = path.join(__dirname, '../uploads');
+    
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const uploadPath = path.join(uploadDir, file.name);
+    await file.mv(uploadPath);  // Dosyayı sunucuya kaydet
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(uploadPath);  // Excel dosyasını okuyun
+    const worksheet = workbook.getWorksheet(1);
+
+    let products = [];
+
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+      const row = worksheet.getRow(rowNumber);
+      const [name, price, description, stock, categoryId, brandId, userId] = row.values.slice(1);
+
+      if (!name || !price || !description || !stock || !categoryId || !brandId || !userId) {
+        console.log(`Eksik veri bulunan satır: ${rowNumber} - ${row.values}`);
+        continue;
+      }
+
+      products.push({
+        name,
+        price,
+        description,
+        stock,
+        category: categoryId,
+        brand: brandId,
+        user: userId
+      });
+    }
+
+    // Mongoose ile toplu ekleme işlemi için insertMany() kullanın
+    await Product.insertMany(products);
+
+    res.status(StatusCodes.OK).json({ success: true, message: 'Ürünler başarıyla yüklendi.' });
+  } catch (error) {
+    console.error('İçe aktarma işlemi sırasında hata:', error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: 'İçe aktarma işlemi sırasında bir hata oluştu.',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createProduct,
   getAllProducts,
@@ -396,4 +512,6 @@ module.exports = {
   featuredProducts,
   importProducts,
   exportProducts,
+  downloadTemplate,
+  importCreateProducts
 };

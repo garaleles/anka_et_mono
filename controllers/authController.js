@@ -24,7 +24,7 @@ const register = async (req, res) => {
 
   const user = await User.create({ email, name, password, profilePic, role, verificationToken });
 
-  const origin = 'https://anka-et-mono.onrender.com';
+  const origin = 'https://www.ankapazarlama.com';
   
   await sendVerificationEmail({
    name: name,

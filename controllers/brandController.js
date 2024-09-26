@@ -10,6 +10,7 @@ const getAllBrands = async (req, res) => {
 };
 
 
+
 const getBrand = async (req, res) => {
   //marka id'sine göre markayı getir
   const brand = await Brand.findOne({ _id: req.params.id });

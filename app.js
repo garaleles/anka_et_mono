@@ -71,6 +71,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", 
         "https://kit.fontawesome.com",
+        "https://www.ankapazarlama.com",
         "https://me.kis.v2.scr.kaspersky-labs.com"],
       
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net",
@@ -134,6 +135,7 @@ app.use(cookieParser(process.env.JWT_SECRET));
 app.use(fileUpload({
   useTempFiles: true,
   tempFileDir: '/tmp/',
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB sınır
 }));
 
 
